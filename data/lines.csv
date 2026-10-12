@@ -1,0 +1,7 @@
+line_id,line_name,line_type,ideal_speed_per_min
+1,BTL2,BOTTLE,500
+2,BTL5,BOTTLE,500
+3,CAN1,CAN,1000
+4,CAN2,CAN,1000
+5,PET1,PET,200
+6,PET2,PET,200

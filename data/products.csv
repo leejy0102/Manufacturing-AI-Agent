@@ -1,0 +1,13 @@
+product_id,brand_name,package_type,volume_ml
+1,Cass Fresh,BOTTLE,500
+2,Cafri,BOTTLE,330
+3,Cass Fresh,CAN,355
+4,Cass Fresh,CAN,500
+5,Cass Light,CAN,500
+6,Hanmac,CAN,500
+7,OB,CAN,500
+8,Fillgood,CAN,500
+9,Budweiser,CAN,500
+10,Cass Fresh,PET,2000
+11,Cass Light,PET,2000
+12,Fillgood,PET,2000
