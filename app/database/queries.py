@@ -214,3 +214,67 @@ def get_planned_downtime_summary(line_id, start_date, end_date):
         )
 
     return result
+
+
+
+# 사용자 질문을 Embedding으로 변환하고
+# pgvector에서 가장 유사한 SOP Chunk를 검색하는 함수
+
+import os
+from pathlib import Path
+
+from dotenv import load_dotenv
+from langchain_openai import OpenAIEmbeddings
+from sqlalchemy import text
+
+from app.database.connection import engine
+
+
+# 프로젝트 루트의 .env 로드
+env_path = Path(__file__).resolve().parents[2] / ".env"
+load_dotenv(env_path)
+
+
+# OpenAI Embedding 모델
+sop_embeddings = OpenAIEmbeddings(
+    model="text-embedding-3-small",
+    api_key=os.getenv("OPENAI_API_KEY")
+)
+
+
+def search_sop_documents(query: str, top_k: int = 3):
+
+    # 1. 사용자 질문을 벡터로 변환
+    query_vector = sop_embeddings.embed_query(query)
+
+    # pgvector가 읽을 수 있는 문자열 형태로 변환
+    vector_string = "[" + ",".join(
+        map(str, query_vector)
+    ) + "]"
+
+    # 2. 질문 벡터와 가장 가까운 SOP Chunk 검색
+    # <=> 는 cosine distance 연산자
+    sql = text("""
+        SELECT
+            id,
+            source_file,
+            content,
+            embedding <=> CAST(:query_vector AS vector) AS distance
+        FROM sop_documents
+        ORDER BY embedding <=> CAST(:query_vector AS vector)
+        LIMIT :top_k;
+    """)
+
+    # 3. DB 조회
+    with engine.connect() as conn:
+        result = conn.execute(
+            sql,
+            {
+                "query_vector": vector_string,
+                "top_k": top_k
+            }
+        )
+
+        rows = result.mappings().all()
+
+    return [dict(row) for row in rows]

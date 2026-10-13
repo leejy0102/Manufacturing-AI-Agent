@@ -15,6 +15,7 @@ from app.tools.manufacturing_tools import (
     performance_loss_summary_tool,
     quality_summary_tool,
     planned_downtime_summary_tool,
+    sop_search_tool,
 )
 
 # .env 불러오기
@@ -29,6 +30,7 @@ tools = [
     performance_loss_summary_tool,
     quality_summary_tool,
     planned_downtime_summary_tool,
+    sop_search_tool,
 ]
 
 # LLM 생성
@@ -77,11 +79,17 @@ SYSTEM_PROMPT = """
    - 주요 원인
    - 개선 제안
 9. 데이터에 근거가 부족하면 억지로 결론을 만들지 마세요.
-10. OEE는 Availability × Performance × Quality로 계산됩니다.
+10. OEE는 Availability와 Performance, 그리고 Quality의 곱으로 계산됩니다.
     GLY는 계획 생산량 대비 실제 생산량을 나타내는 별도 KPI이며,
     GLY를 OEE의 구성요소 또는 OEE 저하의 직접 원인으로 표현하지 마세요.
 11. 현재 데이터 또는 Tool로 수행할 수 없는 분석을
     "추가 분석 가능" 또는 선택지 형태로 제안하지 마세요.
+12. SOP 또는 RAG 검색 결과에 명시되지 않은 구체적인 안전조치,
+    설비조치, 작업절차를 사실처럼 추가하지 마세요.
+13. SOP 검색 결과를 사용한 경우,
+    답변에 참고한 SOP 파일명을 명확히 표시하세요.
+14. 현재 DB 또는 SOP에 존재하지 않는 추가 분석이나 데이터 항목을
+    수행 가능하다고 제안하지 마세요.
 """
 
 def agent_node(state: MessagesState):

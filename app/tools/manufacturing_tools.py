@@ -191,3 +191,30 @@ def planned_downtime_summary_tool(
     )
 
     return result.to_dict(orient="records")
+
+
+# SOP 문서를 벡터 검색해서
+# 사용자 질문과 관련된 작업 절차를 반환하는 RAG Tool
+
+from app.database.queries import search_sop_documents
+
+
+@tool
+def sop_search_tool(query: str):
+    """
+    SOP 및 제조 매뉴얼에서 사용자 질문과 관련된
+    작업 절차, 원인, 조치 방법을 검색합니다.
+
+    Args:
+        query: SOP에서 검색할 자연어 질문
+
+    Returns:
+        관련 SOP 문서 Chunk 검색 결과
+    """
+
+    results = search_sop_documents(
+        query=query,
+        top_k=3
+    )
+
+    return results
