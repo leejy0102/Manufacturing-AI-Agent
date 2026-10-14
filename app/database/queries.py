@@ -77,70 +77,74 @@ def get_kpi_summary(line_name, start_date, end_date):
 
 
 # 3.특정 라인의 기간별 부동 원인 분석 함수
-def get_downtime_summary(line_id, start_date, end_date):
+#  비계획 정지 요약
+# 사용자 친화적으로 line_id 대신 line_name을 받아 조회
 
-    query = text("""
+def get_downtime_summary(line_name, start_date, end_date):
+
+    sql = text("""
         SELECT
-            category,
-            reason,
-            SUM(duration_minutes) AS total_downtime_minutes,
+            d.category,
+            d.reason,
+            SUM(d.duration_minutes) AS total_duration_minutes,
             COUNT(*) AS event_count,
-            ROUND(AVG(duration_minutes)::numeric, 1) AS avg_downtime_minutes
-        FROM downtime_events
-        WHERE line_id = :line_id
-          AND production_date BETWEEN :start_date AND :end_date
-        GROUP BY category, reason
-        ORDER BY total_downtime_minutes DESC;
+            AVG(d.duration_minutes) AS avg_duration_minutes
+        FROM downtime_events d
+        JOIN lines l
+            ON d.line_id = l.line_id
+        WHERE l.line_name = :line_name
+          AND d.production_date BETWEEN :start_date AND :end_date
+        GROUP BY
+            d.category,
+            d.reason
+        ORDER BY
+            total_duration_minutes DESC;
     """)
 
-    params = {
-        "line_id": line_id,
-        "start_date": start_date,
-        "end_date": end_date,
-    }
-
-    with engine.connect() as connection:
-        result = pd.read_sql(
-            query,
-            connection,
-            params=params
-        )
-
-    return result
+    return pd.read_sql(
+        sql,
+        engine,
+        params={
+            "line_name": line_name,
+            "start_date": start_date,
+            "end_date": end_date
+        }
+    )
 
 
-# 4.특정 라인의 기간별 Performance Loss 분석 함수
-def get_performance_loss_summary(line_id, start_date, end_date):
+# # 4.특정 라인의 기간별 Performance Loss 분석 함수
+# line_id 대신 line_name을 받아 조회
 
-    query = text("""
+def get_performance_loss_summary(line_name, start_date, end_date):
+
+    sql = text("""
         SELECT
-            loss_type,
-            SUM(duration_minutes) AS total_loss_minutes,
+            p.loss_type,
+            SUM(p.duration_minutes) AS total_loss_minutes,
             COUNT(*) AS event_count,
-            ROUND(AVG(duration_minutes)::numeric, 1) AS avg_loss_minutes,
-            ROUND(AVG(actual_speed)::numeric, 1) AS avg_actual_speed,
-            ROUND(AVG(normal_speed)::numeric, 1) AS avg_normal_speed
-        FROM performance_loss_events
-        WHERE line_id = :line_id
-          AND production_date BETWEEN :start_date AND :end_date
-        GROUP BY loss_type
-        ORDER BY total_loss_minutes DESC;
+            AVG(p.duration_minutes) AS avg_duration_minutes,
+            AVG(p.actual_speed) AS avg_actual_speed,
+            AVG(p.normal_speed) AS avg_normal_speed
+        FROM performance_loss_events p
+        JOIN lines l
+            ON p.line_id = l.line_id
+        WHERE l.line_name = :line_name
+          AND p.production_date BETWEEN :start_date AND :end_date
+        GROUP BY
+            p.loss_type
+        ORDER BY
+            total_loss_minutes DESC;
     """)
 
-    params = {
-        "line_id": line_id,
-        "start_date": start_date,
-        "end_date": end_date,
-    }
-
-    with engine.connect() as connection:
-        result = pd.read_sql(
-            query,
-            connection,
-            params=params
-        )
-
-    return result
+    return pd.read_sql(
+        sql,
+        engine,
+        params={
+            "line_name": line_name,
+            "start_date": start_date,
+            "end_date": end_date
+        }
+    )
 
 
 # 5.특정 라인의 기간별 품질/Reject 분석 함수
@@ -183,37 +187,40 @@ def get_quality_summary(line_name, start_date, end_date):
     return result
 
 
-# 6.특정 라인의 기간별 계획정지 분석 함수
 
-def get_planned_downtime_summary(line_id, start_date, end_date):
 
-    query = text("""
+
+# 6. 계획 정지 요약
+# line_id 대신 line_name을 받아 조회
+
+def get_planned_downtime_summary(line_name, start_date, end_date):
+
+    sql = text("""
         SELECT
-            downtime_type,
+            p.downtime_type,
             COUNT(*) AS event_count,
-            SUM(duration_minutes) AS total_planned_downtime_minutes,
-            ROUND(AVG(duration_minutes)::numeric, 1) AS avg_duration_minutes
-        FROM planned_downtime_events
-        WHERE line_id = :line_id
-          AND production_date BETWEEN :start_date AND :end_date
-        GROUP BY downtime_type
-        ORDER BY total_planned_downtime_minutes DESC;
+            SUM(p.duration_minutes) AS total_planned_downtime_minutes,
+            AVG(p.duration_minutes) AS avg_duration_minutes
+        FROM planned_downtime_events p
+        JOIN lines l
+            ON p.line_id = l.line_id
+        WHERE l.line_name = :line_name
+          AND p.production_date BETWEEN :start_date AND :end_date
+        GROUP BY
+            p.downtime_type
+        ORDER BY
+            total_planned_downtime_minutes DESC;
     """)
 
-    params = {
-        "line_id": line_id,
-        "start_date": start_date,
-        "end_date": end_date,
-    }
-
-    with engine.connect() as connection:
-        result = pd.read_sql(
-            query,
-            connection,
-            params=params
-        )
-
-    return result
+    return pd.read_sql(
+        sql,
+        engine,
+        params={
+            "line_name": line_name,
+            "start_date": start_date,
+            "end_date": end_date
+        }
+    )
 
 
 

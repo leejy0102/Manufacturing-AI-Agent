@@ -26,7 +26,7 @@ kpi_result = kpi_summary_tool.invoke({
 from app.tools.manufacturing_tools import downtime_summary_tool
 
 downtime_result = downtime_summary_tool.invoke({
-    "line_id": 3,
+    "line_name": "CAN1",
     "start_date": "2026-01-01",
     "end_date": "2026-01-31"
 })
@@ -38,7 +38,7 @@ downtime_result = downtime_summary_tool.invoke({
 from app.tools.manufacturing_tools import performance_loss_summary_tool
 
 performance_loss_result = performance_loss_summary_tool.invoke({
-    "line_id": 3,
+    "line_name": "CAN1",
     "start_date": "2026-01-01",
     "end_date": "2026-01-31"
 })
@@ -62,7 +62,7 @@ print(quality_result)
 from app.tools.manufacturing_tools import planned_downtime_summary_tool
 
 planned_downtime_result = planned_downtime_summary_tool.invoke({
-    "line_id": 3,
+    "line_name": "CAN1",
     "start_date": "2026-01-01",
     "end_date": "2026-01-31"
 })
