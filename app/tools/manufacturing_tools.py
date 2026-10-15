@@ -1,10 +1,18 @@
-# 1. 제조 데이터 조회 함수를 Agent Tool로 감싸기
+# 제조 분석 Query 함수들을 Tool에서 사용하기 위해 import
+
 from langchain_core.tools import tool
 
-from app.database.queries import get_production_data
+from app.database.queries import (
+    get_production_data,
+    get_kpi_summary,
+    get_downtime_summary,
+    get_performance_loss_summary,
+    get_quality_summary,
+    get_planned_downtime_summary,
+    search_sop_documents,
+)
 
-from app.database.queries import get_downtime_summary
-
+# 1. 제조 데이터 조회 함수를 Agent Tool로 감싸기
 
 
 @tool
@@ -35,8 +43,6 @@ def production_data_tool(
 
 
 # 2.KPI 조회 함수를 Agent Tool로 감싸기
-
-from app.database.queries import get_kpi_summary
 
 
 @tool
@@ -192,8 +198,6 @@ def performance_loss_summary_tool(
 
 # 5. 품질 / Reject 분석 함수를 Agent Tool로 감싸기
 
-from app.database.queries import get_quality_summary
-
 
 @tool
 def quality_summary_tool(
@@ -288,9 +292,6 @@ def planned_downtime_summary_tool(
 
 # SOP 문서를 벡터 검색해서
 # 사용자 질문과 관련된 작업 절차를 반환하는 RAG Tool
-
-from app.database.queries import search_sop_documents
-
 
 @tool
 def sop_search_tool(query: str):
