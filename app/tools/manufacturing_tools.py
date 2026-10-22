@@ -10,7 +10,11 @@ from app.database.queries import (
     get_quality_summary,
     get_planned_downtime_summary,
     search_sop_documents,
+    get_past_actions,
 )
+
+from app.analysis.root_cause import rank_root_causes
+from app.analysis.event_patterns import analyze_event_patterns
 
 # 1. 제조 데이터 조회 함수를 Agent Tool로 감싸기
 
@@ -312,3 +316,93 @@ def sop_search_tool(query: str):
     )
 
     return results
+
+
+# 과거 조치 이력 조회 Tool
+# 특정 Downtime 원인에 대해 과거 조치별 성공률과 효과를 반환
+
+@tool
+def past_actions_tool(
+    downtime_reason: str,
+    top_k: int = 5
+):
+    """
+    특정 Downtime 원인에 대해 과거 조치 이력과
+    성공률, 평균 복구시간, 효과점수를 조회합니다.
+    """
+
+    return get_past_actions(
+        downtime_reason=downtime_reason,
+        top_k=top_k
+    )
+
+
+# --------------------------------------------------
+# Root Cause Analysis Tool
+# 현재 손실 데이터와 과거 유사사건을 기반으로
+# 우선 조사해야 할 원인 후보를 순위화한다.
+# --------------------------------------------------
+
+@tool
+def root_cause_analysis_tool(
+    line_name: str,
+    start_date: str,
+    end_date: str,
+    top_k: int = 5,
+):
+    """
+    특정 생산라인과 기간에 대해
+    Downtime 및 Performance Loss 데이터를 분석하고,
+    과거 유사사건과 과거 조치 이력을 참고하여
+    우선 조사해야 할 원인 후보를 순위화합니다.
+
+    이 결과는 실제 근본원인을 확정하는 것이 아니라
+    데이터 기반 조사 우선순위를 제공합니다.
+
+    사용 예:
+    - CAN1 1월 OEE가 낮은 원인을 분석해줘
+    - BTL2의 주요 손실 원인 Top 3 알려줘
+    - PET1에서 무엇부터 조사해야 하는지 알려줘
+    """
+
+    return rank_root_causes(
+        line_name=line_name,
+        start_date=start_date,
+        end_date=end_date,
+        top_k=top_k,
+    )
+
+
+# --------------------------------------------------
+# Event Pattern Analysis Tool
+# 특정 Downtime Reason이
+# 어떤 설비 / 시간대 / 제품 맥락에서 반복되는지 분석한다.
+# --------------------------------------------------
+
+@tool
+def event_pattern_tool(
+    line_name: str,
+    downtime_reason: str,
+    start_date: str,
+    end_date: str,
+    top_k: int = 5,
+):
+    """
+    특정 생산라인과 기간에서 특정 Downtime Reason의
+    반복 발생 패턴을 분석합니다.
+
+    설비별 발생 빈도,
+    시간대별 발생 빈도,
+    제품 생산 맥락별 발생 빈도를 제공합니다.
+
+    이 결과는 인과관계를 확정하는 것이 아니라
+    반복 발생 패턴을 확인하기 위한 분석 결과입니다.
+    """
+
+    return analyze_event_patterns(
+        line_name=line_name,
+        downtime_reason=downtime_reason,
+        start_date=start_date,
+        end_date=end_date,
+        top_k=top_k,
+    )

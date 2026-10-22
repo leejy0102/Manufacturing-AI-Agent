@@ -50,8 +50,19 @@ result = manufacturing_agent.invoke(
             {
                 "role": "user",
                 "content": (
-                    "CAN1 라인에서 2026년 1월 Filler Jam이 얼마나 발생했는지 확인하고, "
-                    "주요 원인과 현장 대응 방법도 SOP를 참고해서 설명해줘."
+                    "CAN1의 2026년 1월 평균 OEE 알려줘."
+                )
+            },
+            {
+                "role": "assistant",
+                "content": (
+                    "CAN1의 2026년 1월 평균 OEE는 83.8%입니다."
+                )
+            },
+            {
+                "role": "user",
+                "content": (
+                    "그럼 2월은?"
                 )
             }
         ]
